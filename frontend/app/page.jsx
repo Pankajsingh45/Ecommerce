@@ -1,35 +1,36 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import ProductCard from "../components/ProductCard";
 
-const products = [
-  {
-    id: 1,
-    name: "Wireless Headphones",
-    price: 1999,
-    category: "Electronics",
-    stock: 12,
-    image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600",
-  },
-  {
-    id: 2,
-    name: "Smart Watch",
-    price: 2499,
-    category: "Accessories",
-    stock: 8,
-    image: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600",
-  },
-  {
-    id: 3,
-    name: "Running Shoes",
-    price: 2999,
-    category: "Fashion",
-    stock: 15,
-    image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600",
-  },
-];
-
 export default function Home() {
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    async function fetchProducts() {
+      try {
+        const res = await fetch("http://localhost:5000/api/products");
+
+        if (!res.ok) {
+          throw new Error("Failed to fetch products");
+        }
+
+        const data = await res.json();
+        setProducts(data.products);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchProducts();
+  }, []);
+
   return (
     <>
       <Navbar />
@@ -91,11 +92,17 @@ export default function Home() {
           </a>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
-          {products.map((product) => (
-            <ProductCard key={product.id} product={product} />
-          ))}
-        </div>
+        {loading ? (
+          <p>Loading products...</p>
+        ) : error ? (
+          <p className="text-red-600">Something went wrong: {error}</p>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
+            {products.slice(0, 6).map((product) => (
+              <ProductCard key={product.id} product={product} />
+            ))}
+          </div>
+        )}
       </section>
 
       <Footer />
