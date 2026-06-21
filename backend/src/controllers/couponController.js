@@ -86,3 +86,32 @@ export const applyCoupon = async (req, res) => {
     });
   }
 };
+export const getAvailableCoupons = async (req, res) => {
+  try {
+    const coupons = await prisma.coupon.findMany({
+      where: {
+        expiryDate: {
+          gte: new Date(),
+        },
+      },
+      select: {
+        code: true,
+        discount: true,
+        expiryDate: true,
+      },
+      orderBy: {
+        discount: "desc",
+      },
+    });
+
+    res.status(200).json({
+      success: true,
+      coupons,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
