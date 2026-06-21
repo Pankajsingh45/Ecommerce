@@ -69,6 +69,22 @@ export const applyCoupon = async (req, res) => {
       });
     }
 
+    // Minimum order amount rules based on discount tier
+    let minOrderAmount = 0;
+
+    if (coupon.discount > 30) {
+      minOrderAmount = 2000;
+    } else if (coupon.discount >= 20 && coupon.discount <= 30) {
+      minOrderAmount = 1000;
+    }
+
+    if (Number(totalAmount) < minOrderAmount) {
+      return res.status(400).json({
+        success: false,
+        message: `This coupon is valid only on orders above ₹${minOrderAmount}`,
+      });
+    }
+
     const discountAmount = (Number(totalAmount) * coupon.discount) / 100;
     const finalAmount = Number(totalAmount) - discountAmount;
 
